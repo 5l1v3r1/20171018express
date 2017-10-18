@@ -8,6 +8,7 @@ import MenuItem from 'material-ui/MenuItem';
 import axios from 'axios';
 
 import UserPage from './UserPage';
+import ClientPage from './ClientPage';
 /*
  login page
 */
@@ -81,9 +82,14 @@ class Login extends Component {
 		 console.log(response);
 		 if(response.data.code == 200){
 		   console.log("Login successfull");
-       console.log(response.data.user);
+		   console.log(response.data.user);
+		   
 		   var uploadScreen=[];
-		   uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+		   if(response.data.user.role == "user"){
+		      uploadScreen.push(<UserPage appContext={self.props.appContext} role={response.data.user.role } user={response.data.user} />)
+		   }else{
+			    uploadScreen.push(<ClientPage appContext={self.props.appContext} role={response.data.user.role } user={response.data.user} />)
+		   }
 		   self.props.appContext.setState({loginPage:[],uploadScreen:uploadScreen})
 		 }
 		 else if(response.data.code == 404){

@@ -79,24 +79,25 @@ class DateScreen extends Component {
     }
   }
   componentDidMount(){
-	  if(this.state.role == "user"){
+	if(this.state.role == "user"){
 
-      console.log(this.state.dateItems);
+		console.log(this.state.dateItems);
 
-		  this.renderNotelist(this.state.dateItems);
-	  }
-    else //client
+		this.renderNotelist(this.state.dateItems);
+    //this.renderDateList(dataItems);
+	}
+	else //client
 	  {
 
-return(
-  <div>
-  <p>Login as:</p>
-  <DropDownMenu value={this.state.category} onChange={(event,index,value)=>this.handleMenuChange(value)}>
-      <MenuItem value={"user"} primaryText="user"/>
-      <MenuItem value={"client"} primaryText="client" />
-  </DropDownMenu>
-  </div>
-);
+		return(
+		  <div>
+		  <p>Login as:</p>
+		  <DropDownMenu value={this.state.category} onChange={(event,index,value)=>this.handleMenuChange(value)}>
+			  <MenuItem value={"user"} primaryText="user"/>
+			  <MenuItem value={"client"} primaryText="client" />
+		  </DropDownMenu>
+		  </div>
+		);
 	  }
 
   }
@@ -104,6 +105,48 @@ return(
   componentWillMount(){
 
   }
+  transferDateitemsEvent(dataItems){
+    eventlist = [];
+    for(var i=0;i<dataItems.length;i++){
+      var cell = [];
+      cell['start'] = dataItems[i].startdate;
+      cell['end'] = dataItems[i].enddate;
+      cell['title'] = 'Free time';
+      cell['desc'] = '';
+      eventlist.push(cell);
+    }
+    return eventlist;
+  }
+  /*user date list show*/
+  renderDateList(dataItems){
+    var envents = transferDateitemsEvent(dataItems);
+    console.log(envents);
+    /*
+    var self = this;
+    var localloginComponent = [];
+    if(1){
+      localloginComponent.push(
+        <MuiThemeProvider>
+          <div  {...this.props}>
+              <BigCalendar
+                selectable
+                defaultView='week'
+                events = {[]}
+                scrollToTime={new Date(1970, 1, 1, 6)}
+                defaultDate={new Date()}
+                onSelectEvent={event => alert(event.title)}
+                onSelectSlot={(slotInfo) => this.handleBigCal(slotInfo)}
+              />
+          </div>
+        </MuiThemeProvider>
+      )
+ 	 }
+   this.setState({notePreview:localloginComponent})
+   */
+  }
+
+
+
 
   fetchDetails = (e) => {
     const data = e.target.getAttribute('data-item');

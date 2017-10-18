@@ -59,32 +59,22 @@ class DateScreen extends Component {
       printingmessage:'',
       printButtonDisabled:false,
       user:this.props.user,
-	  dateItems:this.props.user.dateItems,
-	  dateList:[],//You need get all date list
+	    dateItems:this.props.user.dateItems,//You need get all date list
+	    dateList:this.props.user.dateItems,
       notePreview:[],
-      newtitle:'',
-      newcontent:'',
       userid:this.props.user.id,
-      edittitle:'abc',
-      editcontent:'ccc',
-	  minDate: minDate,
-      maxDate: maxDate,
-      autoOk: false,
-      disableYearSelection: false,
-	  value24min: null,
-	  value24max: null,
-	  editmindate:null,
-	  editmaxdate:null,
-    category:'',
     }
   }
   componentDidMount(){
-	if(this.state.role == "user"){
+  if(this.state.role == "user"){
 
-		console.log(this.state.dateItems);
-
-		this.renderNotelist(this.state.dateItems);
-    this.renderDateList(dataItems);
+		
+    //this.setState({dataItems:this.props.user.dateItems});
+    //console.log(this.state.dateItems);
+		//this.renderNotelist(this.state.dateItems);
+   
+    
+    this.renderDateList(this.state.dateItems);
 	}
 	else //client
 	  {
@@ -106,22 +96,34 @@ class DateScreen extends Component {
 
   }
   transferDateitemsEvent(dataItems){
-    eventlist = [];
+    var eventlist = [];
     for(var i=0;i<dataItems.length;i++){
-      var cell = [];
-      cell['start'] = dataItems[i].startdate;
-      cell['end'] = dataItems[i].enddate;
+      var cell = {};
+      //cell['start'] = dataItems[i].startdate;
+      //cell['end'] = dataItems[i].enddate;
+      var ds = new Date(dataItems[i].startdate);
+      var de = new Date(dataItems[i].enddate);
+      cell['start'] = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate(), ds.getHours(), ds.getMinutes(), ds.getSeconds(), 0),
+      cell['end'] = new Date(de.getFullYear(), de.getMonth(), de.getDate(), de.getHours(), de.getMinutes(), de.getSeconds(), 0),
       cell['title'] = 'Free time';
       cell['desc'] = '';
+      cell['id'] = i;
       eventlist.push(cell);
     }
     return eventlist;
   }
   /*user date list show*/
   renderDateList(dataItems){
-    var envents = transferDateitemsEvent(dataItems);
-    console.log(envents);
-    /*
+    this.setState({dataItems:dataItems});
+    this.state.dateItems = dataItems;
+    var events = this.transferDateitemsEvent(dataItems);
+    console.log("events:");
+    console.log(events);
+    var datenow = new Date();
+    if(events.length > 0){
+      datenow = events[0].start;
+    }
+    console.log(this.state.dateItems);
     var self = this;
     var localloginComponent = [];
     if(1){
@@ -131,86 +133,145 @@ class DateScreen extends Component {
               <BigCalendar
                 selectable
                 defaultView='week'
-                events = {[]}
+                views={['month','week', 'day']}
+                events = {events}
                 scrollToTime={new Date(1970, 1, 1, 6)}
-                defaultDate={new Date()}
-                onSelectEvent={event => alert(event.title)}
+                defaultDate={datenow}
+                onSelectEvent={event => this.handleBigCalDel(event.id)}
                 onSelectSlot={(slotInfo) => this.handleBigCal(slotInfo)}
               />
           </div>
         </MuiThemeProvider>
       )
- 	 }
-   this.setState({notePreview:localloginComponent})
-   */
+   }
+   this.setState({notePreview:localloginComponent});
+    
   }
-
-
-
-
-  fetchDetails = (e) => {
-    const data = e.target.getAttribute('data-item');
-    console.log('We need to get the details for ', data);
+  handleBigCal(slotInfo){
+	  console.log(slotInfo);
+    //onsole.log(id);
+    if(slotInfo.action == "select"){
+	    var self = this;
+      var payload={
+        "startdate":slotInfo.start,
+        "enddate": slotInfo.end,
+      }
+      console.log(payload);
+      axios.post('/api/dates/'+this.state.userid, payload)
+      .then(function (response) {
+       console.log(response);
+	     var ss = self;
+       if(response.data.code == 200){
+         console.log("note create successfull");
+         //console.log(response.data.user);
+         //var uploadScreen=[];
+         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+         self.setState({newtitle:""});
+         self.setState({newcontent:""});
+         alert("Congradulations!Create Appointdate Successfully!");
+         axios.get('api/users/'+self.state.userid)
+           .then(function (response) {
+           console.log(response);
+           if(response.data.code == 200){
+           console.log("note create successfull");
+           //alert("create successfully");
+           console.log(response.data.user);
+           //var uploadScreen=[];
+           //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+           //ss.setState({newtitle:""});
+           
+           //self.renderNotelist(response.data.user.dateItems);
+           
+           self.setState({user:response.data.user});
+           self.setState({dataItems:response.data.user.dateItems});
+           self.renderDateList(response.data.user.dateItems);
+           }
+           else if(response.data.code == 404){
+           console.log("Date create fail");
+           alert(response.data.success)
+           }
+           else{
+           console.log("Date create fail");
+           alert("Date create fail");
+           }
+           })
+           .catch(function (error) {
+           console.log(error);
+           });
+       }
+       else if(response.data.code == 404){
+         console.log("Date create fail");
+         alert(response.data.success)
+       }
+       else{
+         console.log("Date create fail");
+         alert("Date  create fail");
+       }
+       })
+       .catch(function (error) {
+       console.log(error);
+       });
+    }
   }
-  isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-  }
-  renderNotelist(dateItems){
-	var self = this;
-    var notePreview=[];
-	console.log(dateItems);
-	self.setState({dateItems:dateItems});
-    notePreview = this.renderResultTable(dateItems);
-    this.setState({notePreview});
-
-    this.setState({role:this.props.role,dateItems:dateItems});
-  }
-  /*show table > tr*/
-  renderResultRows(dateItems) {
+  handleBigCalDel(index){
+    console.log(index);
+    console.log(this.state.dateItems);
     var self = this;
-    return dateItems.map((data,index) =>{
-        return (
-            <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
-                <td data-title="id">{data.id}</td>
-                <td data-title="startdate">{data.startdate}</td>
-                <td data-title="enddate">{data.enddate}</td>
-				<td data-title="content">
-						<RaisedButton label="Edit" primary={true} style={style} onClick={(event) => self.handleNoteEditClick(event,index)}/>
-						<RaisedButton label="Delete" primary={true} style={style} onClick={(event) => self.handleNoteDelClick(event,index)}/>
-				</td>
-            </tr>
-        );
-    });
-  }
-  /* show table */
-  renderResultTable(data) {
-    var self = this;
-    return(
-		<MuiThemeProvider>
-		  <div>
-			<div className="noteheader">
-			 <center><h3> list</h3></center>
-			<RaisedButton  label="NewAppoint" primary={true} style={style1} onClick={(event) => this.handleNoteCreateClick(event)}/>
-			</div>
-			<div className="notecontainer">
-					 <table className="notetable">
-					  <tr>
-						<th>ID</th>
-						<th>StartDate</th>
-						<th>EndDate</th>
-						<th></th>
-					  </tr>
-					  <tbody>
+    axios.get('/api/dates/'+this.state.userid+"/items/"+this.state.dateItems[index].id)//api/dates/1/items/1
+       .then(function (response) {
+       console.log(response);
+       if(response.data.code == 200){
+         console.log("note delete successfull");
+         //console.log(response.data.user);
+         //var uploadScreen=[];
+         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+         self.setState({edittitle:""});
+         self.setState({editcontent:""});
+         alert("Congradulations!Delete date info Successfully!");
+         axios.get('/api/users/'+self.state.userid)//api/notes/1/items/1
+           .then(function (response) {
+           console.log(response);
+           if(response.data.code == 200){
+           console.log("get successfull");
+           //console.log(response.data.user);
+           //var uploadScreen=[];
+           //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+           self.setState({user:response.data.user});
+           //self.setState({dataItems:response.data.user.dateItems});
+           self.state.dataItems = response.data.user.dateItems;
+           console.log(self.state.dataItems);
+           self.setState({ dataItems: self.state.dataItems}, function() {
+                self.renderDateList(response.data.user.dateItems);
+           });
+           //self.renderNotelist(response.data.user.dateItems);
+             
+           }
+           else if(response.data.code == 404){
+           console.log("get fail");
+           //alert(response.data.success)
+           }
+           else{
+           console.log("get fail");
+           //alert("Note update fail");
+           }
+           })
+           .catch(function (error) {
+           console.log(error);
+           });
 
-						{!this.isEmpty(data)
-                        ? this.renderResultRows(data)
-                        : ''}
-					   </tbody>
-					</table>
-			 </div>
-		   </div>
-		  </MuiThemeProvider>
-	);
+       }
+       else if(response.data.code == 404){
+         console.log("Note update fail");
+         alert(response.data.success)
+       }
+       else{
+         console.log("Note update fail");
+         alert("Note update fail");
+       }
+       })
+       .catch(function (error) {
+       console.log(error);
+       });
   }
 
   handleMenuChange(value){
@@ -246,447 +307,8 @@ class DateScreen extends Component {
   };
   handleChangeEditMaxDate = (event, date) => {
     this.setState({editmaxdate: date});
-  };
-  /*
-  note edit
-  */
-  handleNoteEditClick(event,i){
-    var self = this;
-    console.log(i);
-    console.log(event.target.getAttribute('data-tag'));
-    //this.setState({edittitle:this.state.user.dateItems[i].title});
-   // this.setState({editcontent:this.state.user.dateItems[i].content});
-    this.state.editmindate = new Date(this.state.dateItems[i].startdate);
-    this.state.editmaxdate = new Date(this.state.dateItems[i].enddate);
-	console.log(this.state.dateItems[i].startdate);
-    var localloginComponent = [];
-	localloginComponent.push(
-	  <MuiThemeProvider>
-		<div>
-		 	<div>
-			<DatePicker
-				onChange={this.handleChangeEditMinDate}
-				autoOk={this.state.autoOk}
-				floatingLabelText="Min Date time"
-				defaultDate={this.state.editmindate}
-				disableYearSelection={this.state.disableYearSelection}
-			  />
-			<TimePicker
-			  format="24hr"
-			  hintText="24hr Format"
-			  value={this.state.editmindate}
-			  onChange={this.handleChangeEditMinDate}
-			/>
-			<DatePicker
-				onChange={this.handleChangeEditMaxDate}
-				autoOk={this.state.autoOk}
-				floatingLabelText="Max Date Time"
-				defaultDate={this.state.editmaxdate}
-				disableYearSelection={this.state.disableYearSelection}
-			  />
-			<TimePicker
-			  format="24hr"
-			  hintText="24hr Format"
-			  value={this.state.editmaxdate}
-			  onChange={this.handleChangeEditMaxDate}
-			/>
-			</div>
-		   <RaisedButton label="Edit" primary={true} style={style} onClick={(event) => this.handleNoteEditData(event,i)}/>
-		   <RaisedButton label="Cancel" primary={true} style={style} onClick={() => this.renderNotelist(this.state.dateItems)}/>
-	   </div>
-	   </MuiThemeProvider>
-	)
-     this.setState({notePreview:localloginComponent})
-    //this.props.appContext.setState({userPage:userPage,uploadScreen:[]})
+  }; 
 
-  }
-  /*
-   note del click
-  */
-  handleNoteDelClick(event,i){
-    var self = this;
-    console.log(i);
-    console.log(event.target.getAttribute('data-tag'));
-    axios.get('/api/dates/'+this.state.userid+"/items/"+this.state.dateItems[i].id)//api/dates/1/items/1
-       .then(function (response) {
-       console.log(response);
-       if(response.data.code == 200){
-         console.log("note delete successfull");
-         //console.log(response.data.user);
-         //var uploadScreen=[];
-         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-         self.setState({edittitle:""});
-         self.setState({editcontent:""});
-         alert("Congradulations!Delete date info Successfully!");
-		 axios.get('/api/users/'+self.state.userid)//api/notes/1/items/1
-		   .then(function (response) {
-		   console.log(response);
-		   if(response.data.code == 200){
-			 console.log("get successfull");
-			 //console.log(response.data.user);
-			 //var uploadScreen=[];
-			 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-			 self.setState({user:response.data.user});
-			 self.setState({dataItems:response.data.user.dateItems});
-			   console.log(response.data.user.dateItems);
-			 self.renderNotelist(response.data.user.dateItems);
-		   }
-		   else if(response.data.code == 404){
-			 console.log("get fail");
-			 //alert(response.data.success)
-		   }
-		   else{
-			 console.log("get fail");
-			 //alert("Note update fail");
-		   }
-		   })
-		   .catch(function (error) {
-		   console.log(error);
-		   });
-
-       }
-       else if(response.data.code == 404){
-         console.log("Note update fail");
-         alert(response.data.success)
-       }
-       else{
-         console.log("Note update fail");
-         alert("Note update fail");
-       }
-       })
-       .catch(function (error) {
-       console.log(error);
-       });
-
-  }
-  /*
-   get input content change
-  */
-  onTodoChange(value,index,i){
-	  console.log(index);
-	  var titlev = this.state.edittitle;
-	  var contilev = this.state.editcontent;
-	  //console.log(this.state.edittitle);
-	  if(index == 0){
-		titlev = value;
-	  }else{
-		contilev = value;
-	  }
-	  var localloginComponent = [];
-	  localloginComponent.push(
-			  <MuiThemeProvider>
-				<div>
-				 <TextField
-				   type="text"
-				   hintText="Enter Note title"
-				   value={titlev}
-				   floatingLabelText="Title"
-				   onChange = {(event,newValue) => this.onTodoChange(newValue,0,i)}
-				   />
-				 <br/>
-				   <TextField
-					 type="text"
-					 hintText="Enter Note Content!"
-					 value = {contilev}
-					 floatingLabelText="Content"
-					 onChange = {(event,newValue) => this.onTodoChange(newValue,1,i)}
-					 />
-				   <br/>
-				   <RaisedButton label="Create" primary={true} style={style} onClick={(event) => this.handleNoteEditData(event,i)}/>
-				   <RaisedButton label="Cancel" primary={true} style={style} onClick={() => this.renderNotelist(this.state.dateItems)}/>
-			   </div>
-			   </MuiThemeProvider>
-			)
-	  this.setState({edittitle:titlev});
-	this.setState({editcontent:contilev});
-	this.setState({notePreview:localloginComponent})
-	}
-  handleNoteEditData(event,i){
-	  var self = this;
-	  console.log(this.state.edittitle);
-	  console.log(this.state.editcontent);
-	  console.log(this.state.dateItems[i]);
-	  if(this.state.editmindate != null && this.state.editmaxdate != null) {
-		   console.log(this.state.editmindate);
-			  var payload={
-				"startdate":this.state.editmindate,
-				"enddate": this.state.editmaxdate,
-			  }
-			  console.log(payload);
-			  axios.post('/api/dates/'+this.state.userid +'/items/'+i, payload)
-			   .then(function (response) {
-			   console.log(response);
-			   var ss = self;
-			   if(response.data.code == 200){
-				 console.log("note create successfull");
-				 //console.log(response.data.user);
-				 //var uploadScreen=[];
-				 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-				 self.setState({newtitle:""});
-				 self.setState({newcontent:""});
-				 alert("Congradulations!Update Appointdate Successfully!");
-				 axios.get('api/users/'+self.state.userid)
-				   .then(function (response) {
-				   console.log(response);
-				   if(response.data.code == 200){
-					 console.log("date update successfull");
-					 console.log(response.data.user);
-					 //var uploadScreen=[];
-					 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-					 //ss.setState({newtitle:""});
-					 self.setState({user:response.data.user});
-					 self.setState({dataItems:response.data.user.dateItems});
-					 //self.renderNotelist(response.data.user.dateItems);
-					 self.renderNotelist(response.data.user.dateItems);
-				   }
-				   else if(response.data.code == 404){
-					 console.log("Date update fail");
-					 alert(response.data.success)
-				   }
-				   else{
-					 console.log("Date update fail");
-					 alert("Date update fail");
-				   }
-				   })
-				   .catch(function (error) {
-				   console.log(error);
-				   });
-			   }
-			   else if(response.data.code == 404){
-				 console.log("Date create fail");
-				 alert(response.data.success)
-			   }
-			   else{
-				 console.log("Date create fail");
-				 alert("Date  create fail");
-			   }
-			   })
-			   .catch(function (error) {
-			   console.log(error);
-			   });
-
-	  } else{
-		  alert("date time is null!");
-	  }
-
-	}
-  handleChangeTimePicker24min = (event, date) => {
-    this.setState({value24min: date});
-  };
-  handleChangeTimePicker24max = (event, date) => {
-    this.setState({value24max: date});
-  };
-  handleChangeMinDate = (event, date) => {
-    this.setState({
-      minDate: date,
-    });
-  };
-
-  handleChangeMaxDate = (event, date) => {
-    this.setState({
-      maxDate: date,
-    });
-  };
-  /* create Time */
-  /*
-  handleNoteCreateClick(event){
-   var self = this;
-    var localloginComponent = [];
-    if(1){
-     localloginComponent.push(
-          <MuiThemeProvider>
-            <div>
-			  <div>
-				<DatePicker
-					onChange={this.handleChangeMinDate}
-					autoOk={this.state.autoOk}
-					floatingLabelText="Min Date time"
-					defaultDate={this.state.minDate}
-					disableYearSelection={this.state.disableYearSelection}
-				  />
-		 		<TimePicker
-				  format="24hr"
-				  hintText="24hr Format"
-				  value={this.state.value24min}
-				  onChange={this.handleChangeTimePicker24min}
-				/>
-		        <DatePicker
-					onChange={this.handleChangeMaxDate}
-					autoOk={this.state.autoOk}
-					floatingLabelText="Max Date Time"
-					defaultDate={this.state.maxDate}
-					disableYearSelection={this.state.disableYearSelection}
-				  />
-		 		<TimePicker
-				  format="24hr"
-				  hintText="24hr Format"
-				  value={this.state.value24max}
-				  onChange={this.handleChangeTimePicker24max}
-				/>
-			  </div>
-              <RaisedButton label="Create" primary={true} style={style} onClick={(event) => this.handleNoteUploadData(event)}/>
-			  <RaisedButton label="Cancel" primary={true} style={style} onClick={() => this.renderNotelist(this.state.dateItems)}/>
-           </div>
-           </MuiThemeProvider>
-        )
-  }
-     this.setState({notePreview:localloginComponent})
-}*/
-  handleNoteCreateClick(event){
-	  var self = this;
-    var localloginComponent = [];
-    if(1){
-     localloginComponent.push(
-		 <MuiThemeProvider>
-            <div  {...this.props}>
-				<RaisedButton label="Cancel" primary={true} style={style} onClick={() => this.renderNotelist(this.state.dateItems)}/>
-				<BigCalendar
-				  selectable
-				  defaultView='week'
-				  events = {[]}
-				  scrollToTime={new Date(1970, 1, 1, 6)}
-				  defaultDate={new Date()}
-				  onSelectEvent={event => alert(event.title)}
-				  onSelectSlot={(slotInfo) => this.handleBigCal(slotInfo)}
-				/>
-			</div>
-		</MuiThemeProvider>
-        )
- 	 }
-     this.setState({notePreview:localloginComponent})
-  }
-  handleBigCal(slotInfo){
-	  console.log(slotInfo);
-	  var self = this;
-      var payload={
-        "startdate":slotInfo.start,
-        "enddate": slotInfo.end,
-      }
-      console.log(payload);
-      axios.post('/api/dates/'+this.state.userid, payload)
-       .then(function (response) {
-       console.log(response);
-	   var ss = self;
-       if(response.data.code == 200){
-         console.log("note create successfull");
-         //console.log(response.data.user);
-         //var uploadScreen=[];
-         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-         self.setState({newtitle:""});
-         self.setState({newcontent:""});
-         alert("Congradulations!Create Appointdate Successfully!");
-		 axios.get('api/users/'+self.state.userid)
-		   .then(function (response) {
-		   console.log(response);
-		   if(response.data.code == 200){
-			 console.log("note create successfull");
-			 alert("create successfully");
-			 console.log(response.data.user);
-			 //var uploadScreen=[];
-			 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-			 //ss.setState({newtitle:""});
-			 self.setState({user:response.data.user});
-			 self.setState({dataItems:response.data.user.dateItems});
-			 //self.renderNotelist(response.data.user.dateItems);
-			 self.renderNotelist(response.data.user.dateItems);
-		   }
-		   else if(response.data.code == 404){
-			 console.log("Date create fail");
-			 alert(response.data.success)
-		   }
-		   else{
-			 console.log("Date create fail");
-			 alert("Date create fail");
-		   }
-		   })
-		   .catch(function (error) {
-		   console.log(error);
-		   });
-       }
-       else if(response.data.code == 404){
-         console.log("Date create fail");
-         alert(response.data.success)
-       }
-       else{
-         console.log("Date create fail");
-         alert("Date  create fail");
-       }
-       })
-       .catch(function (error) {
-       console.log(error);
-       });
-  }
- /* update note */
- handleNoteUploadData(event){
-    var self = this;
-	console.log(this.state.value24min);
-	console.log(this.state.minDate);
-
-
-    if(this.state.value24min != null && this.state.value24max != null  & this.state.minDate != null  && this.state.maxDate != null ) {
-      this.state.minDate.setHours(this.state.value24min.getHours(), this.state.value24min.getMinutes(), this.state.value24min.getSeconds(),0);
-      this.state.maxDate.setHours(this.state.value24max.getHours(), this.state.value24max.getMinutes(), this.state.value24max.getSeconds(),0);
-      var payload={
-        "startdate":this.state.minDate,
-        "enddate": this.state.maxDate,
-      }
-      console.log(payload);
-      axios.post('/api/dates/'+this.state.userid, payload)
-       .then(function (response) {
-       console.log(response);
-	   var ss = self;
-       if(response.data.code == 200){
-         console.log("note create successfull");
-         //console.log(response.data.user);
-         //var uploadScreen=[];
-         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-         self.setState({newtitle:""});
-         self.setState({newcontent:""});
-         alert("Congradulations!Create Appointdate Successfully!");
-		 axios.get('api/users/'+self.state.userid)
-		   .then(function (response) {
-		   console.log(response);
-		   if(response.data.code == 200){
-			 console.log("note create successfull");
-			 console.log(response.data.user);
-			 //var uploadScreen=[];
-			 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-			 //ss.setState({newtitle:""});
-			 self.setState({user:response.data.user});
-			 self.setState({dataItems:response.data.user.dateItems});
-			 //self.renderNotelist(response.data.user.dateItems);
-			 self.renderNotelist(response.data.user.dateItems);
-		   }
-		   else if(response.data.code == 404){
-			 console.log("Date create fail");
-			 alert(response.data.success)
-		   }
-		   else{
-			 console.log("Date create fail");
-			 alert("Date create fail");
-		   }
-		   })
-		   .catch(function (error) {
-		   console.log(error);
-		   });
-       }
-       else if(response.data.code == 404){
-         console.log("Date create fail");
-         alert(response.data.success)
-       }
-       else{
-         console.log("Date create fail");
-         alert("Date  create fail");
-       }
-       })
-       .catch(function (error) {
-       console.log(error);
-       });
-	   } else{
-
-		   alert("Date time is null");
-	   }
-  }
 /*
   Function:toggleDrawer
   Parameters: event

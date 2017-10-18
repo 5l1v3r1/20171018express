@@ -69,7 +69,7 @@ class Register extends Component {
 		  "category": this.state.category,
 		  "price":this.state.price,
 		  "description":this.state.description,
-      "role":this.state.role,
+          "role":this.state.role,
 	  }
 	  axios.post('/api/users', payload)
 	  .then(function (response) {
@@ -98,31 +98,31 @@ class Register extends Component {
 
   else{
     console.log("enters else block");
-  // console.log("values in register handler",role);
-  var self = this;
-  //To be done:check for empty values before hitting submit
-  if(this.state.username.length==0 || this.state.email.length==0 ||  this.state.password.length==0 ||  this.state.gender.length==0 ||  this.state.location.length==0 ||  this.state.description.length==0){
-  alert("Input Value must not be empty!");
-}
-else if(this.state.gender != 'Male' && this.state.gender!= 'Female' && this.state.gender != 'Other'){
-  alert("Please select a gender!");
-}else if( !this.isValidEmailAddress(this.state.email)){
-  alert("Email format is wrong!");
-}
+  	// console.log("values in register handler",role);
+  	var self = this;
+  	//To be done:check for empty values before hitting submit
+ 	if(this.state.username.length==0 || this.state.email.length==0 ||  this.state.password.length==0 ||  this.state.gender.length==0 ||  this.state.location.length==0 ||  this.state.description.length==0){
+  		alert("Input Value must not be empty!");
+	}
+	else if(this.state.gender != 'Male' && this.state.gender!= 'Female' && this.state.gender != 'Other'){
+  		alert("Please select a gender!");
+	}else if( !this.isValidEmailAddress(this.state.email)){
+  		alert("Email format is wrong!");
+	}
 // }else if(!this.checkNum( this.state.price )){
 //   alert("Price must be number!");
 // }
-  else{
+  	else{
     var payload={
     "username": this.state.username,
     "email":this.state.email,
     "password":this.state.password,
     "gender":this.state.gender,
     "location":this.state.location,
-    "category": this.state.category,
-    "price":this.state.price,
-    "description":this.state.description,
-    "role":this.state.role,
+    "category": "clientuser",
+	"price":0,
+	"description":this.state.description,
+	"role":this.state.role,
   }
   axios.post('/api/users', payload)
   .then(function (response) {

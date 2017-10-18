@@ -40,6 +40,16 @@ module.exports = {
         price: {[Op.lte]: req.params.price},
         location: req.params.location,
       },
+	  include: [
+		  {
+          model: NoteItem ,
+          as: 'noteItems',
+          },
+		  {
+		      model: DateItem ,
+              as: 'dateItems',
+          }
+	  ],
     })
     /*
       .findById(req.params.userid, {

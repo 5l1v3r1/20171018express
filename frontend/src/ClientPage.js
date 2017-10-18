@@ -22,7 +22,7 @@ class App extends Component {
     var currentScreen=[];
     //currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user} />);
 	  //console.log("lala");
-	currentScreen.push(<NoteScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user} />);
+	currentScreen.push(<SearchScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user} />);
     this.setState({currentScreen})
   }
   /**
@@ -36,6 +36,12 @@ class App extends Component {
   /*nav bar click*/
   handleMenuClick(event,page){
     switch(page){
+      case "search":
+      	console.log(this.props);
+      	var currentScreen=[];
+      	currentScreen.push(<SearchScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
+      	this.setState({currentScreen})
+      	break;
       case "notelist":
 		  // console.log("need to open uploadapge")
 		  console.log(this.props);
@@ -48,42 +54,6 @@ class App extends Component {
 		  var currentScreen=[];
 		  currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
       this.setState({currentScreen});
-
-      	break;
-      case "datelist":
-        var currentScreen=[];
-		    //currentScreen.push(<DateScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
-		    this.setState({currentScreen})
-		  // console.log("need to open uploadapge")
-		    console.log(this.props);
-        self = this;
-        axios.get('/api/users/'+self.props.user.id)//api/notes/1/items/1
-           .then(function (response) {
-           console.log(response);
-           if(response.data.code == 200){
-           console.log("get successfull");
-           //console.log(response.data.user);
-           //var uploadScreen=[];
-           //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-           self.setState({user:response.data.user});
-           self.setState({dataItems:response.data.user.dateItems});
-             console.log(response.data.user.dateItems);
-             //currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={response.data.user}/>);
-             currentScreen.push(<DateScreen appContext={self.props.appContext} role={self.props.role} user={response.data.user}/>);
-             self.setState({currentScreen});
-           }
-           else if(response.data.code == 404){
-           console.log("get fail");
-           //alert(response.data.success)
-           }
-           else{
-           console.log("get fail");
-           //alert("Note update fail");
-           }
-           })
-           .catch(function (error) {
-           console.log(error);
-           });
 
       	break;
       case "logout":
@@ -114,9 +84,6 @@ class App extends Component {
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"profile")}>
                   Profile
-              </MenuItem>
-			  <MenuItem onClick={(event) => this.handleMenuClick(event,"datelist")}>
-                  AppointDate
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"logout")}>
                   Logout
