@@ -244,8 +244,8 @@ class SearchScreen extends Component {
               <RaisedButton label="Return Search page" primary={true} style={style} onClick={() => this.renderSearchlist(this.state.searchItems)}/>
               <BigCalendar
                 selectable
-                defaultView='week'
-                views={['month','week', 'day']}
+                defaultView='agenda'
+                views={['month','week', 'day','agenda']}
                 events = {events}
                 scrollToTime={new Date(1970, 1, 1, 6)}
                 defaultDate={datenow}

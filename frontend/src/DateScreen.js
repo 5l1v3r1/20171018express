@@ -133,7 +133,7 @@ class DateScreen extends Component {
               <BigCalendar
                 selectable
                 defaultView='week'
-                views={['month','week', 'day']}
+                views={['month','week', 'day','agenda']}
                 events = {events}
                 scrollToTime={new Date(1970, 1, 1, 6)}
                 defaultDate={datenow}
