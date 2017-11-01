@@ -16,6 +16,16 @@ module.exports = {
 		  allowNull: false,
 		}
 	  ,
+      clientid: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+		defaultValue: -1,
+      },
+	  msg: {
+        allowNull: true,
+        type: Sequelize.STRING,
+		defaultValue: "",
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

@@ -27,10 +27,12 @@ module.exports = (app) => {
 
   app.post('/api/dates/:userid', dateItemsController.create);//create date
   app.post('/api/dates/:userid/items/:dateid', dateItemsController.update);//update date
+  app.post('/api/dates/client/:clientid/items/:dateid', dateItemsController.updateClient);//update date
+  app.get('/api/dates/client/:clientid/items/:dateid', dateItemsController.updateUserDate);//update date
   app.get('/api/dates/items', dateItemsController.retrieve);//get user info
   app.get('/api/dates/:userid/items/:dateid', dateItemsController.destroy);//delete date
 
-
+  app.post('/api/mail/:email', dateItemsController.postEmail);//postemail
 
   app.post('/api/appointment', appointmentController.create);//create appointment
   // app.post('/api/appointment/:clientid/items/:clientid', appointmentController.update);//update appointment

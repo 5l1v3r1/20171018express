@@ -34,6 +34,7 @@ class SearchScreen extends Component {
   constructor(props){
     super(props);
     this.state={
+	  userid :this.props.user.id,
       searchItems:[],
       searchPreview:[],
       category:'Model',
@@ -41,6 +42,9 @@ class SearchScreen extends Component {
       price:'100',
       role:'client',
       username:'',
+	  msg:'',
+	  tmpe:'',
+	  emailmsg:'',
     }
   }
   componentDidMount(){
@@ -148,12 +152,6 @@ class SearchScreen extends Component {
       <MuiThemeProvider>
 	 
       	  <div>
-      Username:
-      <TextField
-        hintText="part or full username"
-        floatingLabelText="username"
-        onChange = {(event,newValue) => this.setState({username:newValue})}
-       />
 	    Category:
 		  <DropDownMenu value={this.state.category} onChange={(event,index,value)=>this.handleCategoryChange(value)}>
 		  <MenuItem value={"Model"} primaryText="Model" />
@@ -204,7 +202,7 @@ class SearchScreen extends Component {
 	}
   handleBigCal(slotInfo){
   }
-   transferDateitemsEvent(dataItems){
+   transferDateitemsEvent(dataItems,email){
     var eventlist = [];
     for(var i=0;i<dataItems.length;i++){
       var cell = {};
@@ -212,11 +210,25 @@ class SearchScreen extends Component {
       //cell['end'] = dataItems[i].enddate;
       var ds = new Date(dataItems[i].startdate);
       var de = new Date(dataItems[i].enddate);
-      cell['start'] = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate(), ds.getHours(), ds.getMinutes(), ds.getSeconds(), 0),
-      cell['end'] = new Date(de.getFullYear(), de.getMonth(), de.getDate(), de.getHours(), de.getMinutes(), de.getSeconds(), 0),
-      cell['title'] = 'Free time';
-      cell['desc'] = '';
-      cell['id'] = i;
+      cell['start'] = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate(), ds.getHours(), ds.getMinutes(), ds.getSeconds(), 0);
+      cell['end'] = new Date(de.getFullYear(), de.getMonth(), de.getDate(), de.getHours(), de.getMinutes(), de.getSeconds(), 0);
+	  if(dataItems[i].clientid == -1){
+		  cell['title'] = 'Free time';
+	  }else{
+		  if(dataItems[i].clientid == this.state.userid){
+			  if(dataItems[i].msg != ''){
+				  cell['title'] = 'Have been booked;My message:' + dataItems[i].msg;
+			  }else{
+				  cell['title'] = 'Have been booked';
+			  }
+		  }else{
+			  cell['title'] = 'Have been booked';
+		  }
+		  
+	  }
+      cell['desc'] = dataItems[i].clientid;
+      cell['id'] = dataItems[i].id;
+	  cell['email'] = email;
       eventlist.push(cell);
     }
     return eventlist;
@@ -226,7 +238,8 @@ class SearchScreen extends Component {
     //this.setState({dataItems:dataItems});
     //this.state.dateItems = dataItems;
     console.log(data.dateItems);
-    var events = this.transferDateitemsEvent(data.dateItems);
+	console.log(data);
+    var events = this.transferDateitemsEvent(data.dateItems,data.email);
     console.log("events:");
     console.log(events);
     var datenow = new Date();
@@ -244,12 +257,12 @@ class SearchScreen extends Component {
               <RaisedButton label="Return Search page" primary={true} style={style} onClick={() => this.renderSearchlist(this.state.searchItems)}/>
               <BigCalendar
                 selectable
-                defaultView='agenda'
+                defaultView='week'
                 views={['month','week', 'day','agenda']}
                 events = {events}
                 scrollToTime={new Date(1970, 1, 1, 6)}
                 defaultDate={datenow}
-                onSelectEvent={event => this.handleBigCal(event.id)}
+                onSelectEvent={event => this.handleBigCalOP(event)}
                 onSelectSlot={(slotInfo) => this.handleBigCal(slotInfo)}
               />
           </div>
@@ -259,10 +272,103 @@ class SearchScreen extends Component {
    this.setState({searchPreview:localloginComponent});
     
   }
+  handleBigCalOP(e){
+	  console.log(e);
+	  this.setState({tmpe:e});
+	  if(e.desc == -1){
+		var localloginComponent=[];
+		localloginComponent.push(
+		  <MuiThemeProvider>
+			<div>
+			 <TextField
+			   type="text"
+			   hintText="Enter your additional message"
+			   floatingLabelText="message"
+			   onChange = {(event,newValue) => this.setState({msg:newValue})}
+			   />
+			   <br/>
+			    <TextField
+			   type="text"
+			   hintText="Enter your Email message"
+			   floatingLabelText="email content"
+			   onChange = {(event,newValue) => this.setState({emailmsg:newValue})}
+			   />
+			   <br/>
+			   <RaisedButton label="Submit" primary={true} style={style} onClick={(event) => this.handleSubmitmsg(event)}/>
+			   <RaisedButton label="Cancel" primary={true} style={style} onClick={(event) => this.handleCancelMsg(event)}/>
+		   </div>
+		   </MuiThemeProvider>
+		)
+		this.setState({searchPreview:localloginComponent});
+	  }else{
+		  alert("This time has been booked!");
+	  }
+  }
+  handleCancelMsg(event){
+	  this.renderSearchlist(this.state.searchItems);
+  }
+  handleSubmitmsg(event){
+	  console.log(this.state.tmpe);
+	  var e = this.state.tmpe;
+	  var self = this;
+	  if(this.state.msg != ''){
+		  console.log("input not null");
+	  }else{
+		  console.log("input is null");
+	  }
+	  /* update data */
+	  var payload= {
+        "msg":this.state.msg
+      }
+	  axios.post('api/dates/client/'+this.state.userid+'/items/'+e.id,payload)
+	  .then(function (response) {
+	    if (response.data.code ==200){
+		  console.log(response.data.user);
+		  alert("Book time successfully and Email has been send!");
+		  payload={
+			  "emailmsg":self.state.emailmsg
+		  }
+		  axios.post('api/mail/'+e.email,payload)
+		  .then(function (response) {
+			console.log("email send!");
+		  })
+		  .catch(function (error) {
+			console.log(payload);
+			console.log(error);
+		  });
+		  self.handleSearchClick(event);
+
+
+	    }
+	  })
+	  .catch(function (error) {
+	    console.log(payload);
+	    console.log(error);
+	  });
+  }
     fetchDetails = (e) => {
 		const data = e.target.getAttribute('data-item');
 		console.log('We need to get the details for ', data);
 	  }
+    handleGetProfile(data){
+      console.log(data);
+      var localloginComponent=[];
+      localloginComponent.push(
+        <MuiThemeProvider>
+        <div>
+          <p>ID:{data.id} </p>
+          <p>Username: {data.username}</p>
+          <p>Email: {data.email}</p>
+          <p>Gender: {data.gender}</p>
+          <p>Location: {data.location}</p>
+          <p>Price: {data.price}</p>
+           <br/>
+           <RaisedButton label="Return to Search page" primary={true} style={style} onClick={(event) => this.handleCancelMsg(event)}/>
+         </div>
+         </MuiThemeProvider>
+      )
+      this.setState({searchPreview:localloginComponent});
+    }
     renderResultRows(searchItems) {
       console.log("Inside renderResultRow!")
       var self = this;
@@ -270,7 +376,7 @@ class SearchScreen extends Component {
       return searchItems.map((data,index) =>{
         return (
           <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
-          <td data-title="username">{data.username}</td>
+          <td data-title="username" onClick={(event) =>this.handleGetProfile(data)} ><a className="usershow">{data.username}</a></td>
           <td data-title="category">
 			{data.category}
 		  </td>

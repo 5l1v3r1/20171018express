@@ -105,9 +105,6 @@ class App extends Component {
         </MuiThemeProvider>
         <MuiThemeProvider>
           <Drawer open={this.state.draweropen}>
-          <MenuItem onClick={(event) => this.handleMenuClick(event,"search")}>
-                    Search
-                </MenuItem>
               <div>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"notelist")}>
                   Note list
@@ -116,7 +113,7 @@ class App extends Component {
                   Profile
               </MenuItem>
 			  <MenuItem onClick={(event) => this.handleMenuClick(event,"datelist")}>
-                  AppointDate
+                  Calendar
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"logout")}>
                   Logout

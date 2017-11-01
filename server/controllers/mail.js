@@ -1,8 +1,52 @@
 
+const nodemailer = require('nodemailer');
+
+module.exports = {
+  
+  /*update appoint date
+  postEmail(req, res) {
+	let transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: account.user, // generated ethereal user
+            pass: account.pass  // generated ethereal password
+        }
+    });
+
+    // setup email data with unicode symbols
+    let mailOptions = {
+        from: '"Fred Foo 👻" <foo@blurdybloop.com>', // sender address
+        to: 'bar@blurdybloop.com, baz@blurdybloop.com', // list of receivers
+        subject: 'Hello ✔', // Subject line
+        text: 'Hello world?', // plain text body
+        html: '<b>Hello world?</b>' // html body
+    };
+	transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        }else{
+			console.log("success");
+		}
+        //console.log('Message sent: %s', info.messageId);
+        // Preview only available when sending through an Ethereal account
+        //console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@blurdybloop.com>
+        // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    });
+    return res.send({
+            "code":200,
+            "success":"email"
+          });
+  },
+	*/
+	
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const DateItem = require('../models').DateItem;
-const nodemailer = require('nodemailer');
+
 module.exports = {
   /*create new appointdate*/
   create(req, res) {
@@ -282,37 +326,9 @@ module.exports = {
           });
       });
   },
-  postEmail(req, res) {
-    var target = req.params.email;
-    var msg = req.body.emailmsg;
-    var transporter = nodemailer.createTransport({
-     service: 'gmail',
-     auth: {
-            user: 'xxx@gmail.com', // your username
-            pass: 'password' //your password
-        }
-    });
-    // Message object
-    const mailOptions = {
-      from: 'xxx@gmail.com', // !!!!!! must keep the same with above
-      to: target, // list of receivers
-      subject: 'you have a new booking', // Subject line
-      html: '<p>'+ msg +'</p>'// plain text body
-    };
 
-    transporter.sendMail(mailOptions, function (err, info) {
-       if(err)
-         console.log(err)
-       else
-         console.log(info);
-    });
-    
-    
 
-    return res.send({
-            "code":200,
-            "success":"email"
-          });
-  },
+};
 
+  
 };

@@ -59,8 +59,8 @@ class DateScreen extends Component {
       printingmessage:'',
       printButtonDisabled:false,
       user:this.props.user,
-	    dateItems:this.props.user.dateItems,//You need get all date list
-	    dateList:this.props.user.dateItems,
+	  dateItems:this.props.user.dateItems,//You need get all date list
+	  dateList:this.props.user.dateItems,
       notePreview:[],
       userid:this.props.user.id,
     }
@@ -103,10 +103,19 @@ class DateScreen extends Component {
       //cell['end'] = dataItems[i].enddate;
       var ds = new Date(dataItems[i].startdate);
       var de = new Date(dataItems[i].enddate);
-      cell['start'] = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate(), ds.getHours(), ds.getMinutes(), ds.getSeconds(), 0),
-      cell['end'] = new Date(de.getFullYear(), de.getMonth(), de.getDate(), de.getHours(), de.getMinutes(), de.getSeconds(), 0),
-      cell['title'] = 'Free time';
-      cell['desc'] = '';
+      cell['start'] = new Date(ds.getFullYear(), ds.getMonth(), ds.getDate(), ds.getHours(), ds.getMinutes(), ds.getSeconds(), 0);
+      cell['end'] = new Date(de.getFullYear(), de.getMonth(), de.getDate(), de.getHours(), de.getMinutes(), de.getSeconds(), 0);
+	  if(dataItems[i].clientid == -1){
+		  cell['title'] = 'Free time';
+	  }else{
+		  if(dataItems[i].msg != ''){
+			  cell['title'] = 'Have been booked;Message:' + dataItems[i].msg;
+		  }else{
+			  cell['title'] = 'Have been booked';
+		  }
+		  
+	  }
+      cell['desc'] = dataItems[i].clientid;
       cell['id'] = i;
       eventlist.push(cell);
     }
@@ -137,7 +146,7 @@ class DateScreen extends Component {
                 events = {events}
                 scrollToTime={new Date(1970, 1, 1, 6)}
                 defaultDate={datenow}
-                onSelectEvent={event => this.handleBigCalDel(event.id)}
+                onSelectEvent={event => this.handleBigCalDel(event)}
                 onSelectSlot={(slotInfo) => this.handleBigCal(slotInfo)}
               />
           </div>
@@ -213,65 +222,122 @@ class DateScreen extends Component {
        });
     }
   }
-  handleBigCalDel(index){
+  handleBigCalDel(e){
+	var index = e.id;
     console.log(index);
     console.log(this.state.dateItems);
     var self = this;
-    axios.get('/api/dates/'+this.state.userid+"/items/"+this.state.dateItems[index].id)//api/dates/1/items/1
-       .then(function (response) {
-       console.log(response);
-       if(response.data.code == 200){
-         console.log("note delete successfull");
-         //console.log(response.data.user);
-         //var uploadScreen=[];
-         //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-         self.setState({edittitle:""});
-         self.setState({editcontent:""});
-         alert("Congradulations!Delete date info Successfully!");
-         axios.get('/api/users/'+self.state.userid)//api/notes/1/items/1
-           .then(function (response) {
-           console.log(response);
-           if(response.data.code == 200){
-           console.log("get successfull");
-           //console.log(response.data.user);
-           //var uploadScreen=[];
-           //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-           self.setState({user:response.data.user});
-           //self.setState({dataItems:response.data.user.dateItems});
-           self.state.dataItems = response.data.user.dateItems;
-           console.log(self.state.dataItems);
-           self.setState({ dataItems: self.state.dataItems}, function() {
-                self.renderDateList(response.data.user.dateItems);
-           });
-           //self.renderNotelist(response.data.user.dateItems);
-             
-           }
-           else if(response.data.code == 404){
-           console.log("get fail");
-           //alert(response.data.success)
-           }
-           else{
-           console.log("get fail");
-           //alert("Note update fail");
-           }
-           })
-           .catch(function (error) {
-           console.log(error);
-           });
+	if(e.desc != -1){
+		axios.get('/api/dates/client/-1/items/'+this.state.dateItems[index].id)//api/dates/1/items/1
+		   .then(function (response) {
+		   console.log(response);
+		   if(response.data.code == 200){
+			 console.log("cancel successfull");
+			 //console.log(response.data.user);
+			 //var uploadScreen=[];
+			 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+			 alert("Congradulations!Cancel booking Successfully!");
+			 axios.get('/api/users/'+self.state.userid)//api/notes/1/items/1
+			   .then(function (response) {
+			   console.log(response);
+			   if(response.data.code == 200){
+			   console.log("get successfull");
+			   //console.log(response.data.user);
+			   //var uploadScreen=[];
+			   //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+			   self.setState({user:response.data.user});
+			   //self.setState({dataItems:response.data.user.dateItems});
+			   self.state.dataItems = response.data.user.dateItems;
+			   console.log(self.state.dataItems);
+			   self.setState({ dataItems: self.state.dataItems}, function() {
+					self.renderDateList(response.data.user.dateItems);
+			   });
+			   //self.renderNotelist(response.data.user.dateItems);
 
-       }
-       else if(response.data.code == 404){
-         console.log("Note update fail");
-         alert(response.data.success)
-       }
-       else{
-         console.log("Note update fail");
-         alert("Note update fail");
-       }
-       })
-       .catch(function (error) {
-       console.log(error);
-       });
+			   }
+			   else if(response.data.code == 404){
+			   console.log("get fail");
+			   //alert(response.data.success)
+			   }
+			   else{
+			   console.log("get fail");
+			   //alert("Note update fail");
+			   }
+			   })
+			   .catch(function (error) {
+			   console.log(error);
+			   });
+
+		   }
+		   else if(response.data.code == 404){
+			 console.log("Note update fail");
+			 alert(response.data.success)
+		   }
+		   else{
+			 console.log("Note update fail");
+			 alert("Note update fail");
+		   }
+		   })
+		   .catch(function (error) {
+		   console.log(error);
+		   });
+	}else{
+		axios.get('/api/dates/'+this.state.userid+"/items/"+this.state.dateItems[index].id)//api/dates/1/items/1
+		   .then(function (response) {
+		   console.log(response);
+		   if(response.data.code == 200){
+			 console.log("note delete successfull");
+			 //console.log(response.data.user);
+			 //var uploadScreen=[];
+			 //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+			 self.setState({edittitle:""});
+			 self.setState({editcontent:""});
+			 alert("Congradulations!Delete date info Successfully!");
+			 axios.get('/api/users/'+self.state.userid)//api/notes/1/items/1
+			   .then(function (response) {
+			   console.log(response);
+			   if(response.data.code == 200){
+			   console.log("get successfull");
+			   //console.log(response.data.user);
+			   //var uploadScreen=[];
+			   //uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
+			   self.setState({user:response.data.user});
+			   //self.setState({dataItems:response.data.user.dateItems});
+			   self.state.dataItems = response.data.user.dateItems;
+			   console.log(self.state.dataItems);
+			   self.setState({ dataItems: self.state.dataItems}, function() {
+					self.renderDateList(response.data.user.dateItems);
+			   });
+			   //self.renderNotelist(response.data.user.dateItems);
+
+			   }
+			   else if(response.data.code == 404){
+			   console.log("get fail");
+			   //alert(response.data.success)
+			   }
+			   else{
+			   console.log("get fail");
+			   //alert("Note update fail");
+			   }
+			   })
+			   .catch(function (error) {
+			   console.log(error);
+			   });
+
+		   }
+		   else if(response.data.code == 404){
+			 console.log("Note update fail");
+			 alert(response.data.success)
+		   }
+		   else{
+			 console.log("Note update fail");
+			 alert("Note update fail");
+		   }
+		   })
+		   .catch(function (error) {
+		   console.log(error);
+		   });
+	}
   }
 
   handleMenuChange(value){
