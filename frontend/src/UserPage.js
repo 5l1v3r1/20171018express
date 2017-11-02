@@ -6,6 +6,7 @@ import AppBar from 'material-ui/AppBar';
 import FontIcon from 'material-ui/FontIcon';
 import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 import LoginScreen from './Loginscreen'
+import HistoryUserScreen from './HistoryUserScreen';
 
 import ProfileScreen from './ProfileScreen';
 import NoteScreen from './NoteScreen';
@@ -47,7 +48,14 @@ class App extends Component {
 		  // console.log("need to open pastfiles")
 		  var currentScreen=[];
 		  currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
-      this.setState({currentScreen});
+          this.setState({currentScreen});
+
+      	break;
+      case "history":
+		  // console.log("need to open pastfiles")
+		  var currentScreen=[];
+		  currentScreen.push(<HistoryUserScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
+          this.setState({currentScreen});
 
       	break;
       case "datelist":
@@ -114,6 +122,9 @@ class App extends Component {
               </MenuItem>
 			  <MenuItem onClick={(event) => this.handleMenuClick(event,"datelist")}>
                   Calendar
+              </MenuItem>
+			  <MenuItem onClick={(event) => this.handleMenuClick(event,"history")}>
+                  history
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"logout")}>
                   Logout

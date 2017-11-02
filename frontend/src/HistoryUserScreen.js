@@ -30,7 +30,7 @@ import moment from 'moment';
 /*
 HistoryClientScreen page
 */
-class HistoryClientScreen extends Component {
+class HistoryUserScreen extends Component {
   constructor(props){
     super(props);
     this.state={
@@ -41,7 +41,7 @@ class HistoryClientScreen extends Component {
       category:'Model',
       location:'San Francisco,CA',
       price:'100',
-      role:'client',
+      role:'user',
       username:'',
 	  msg:'',
 	  tmpe:'',
@@ -50,32 +50,42 @@ class HistoryClientScreen extends Component {
   }
   componentDidMount(){
     var self = this;
-	axios.get('api/users/getallusers/user')
+	axios.get('/api/users/' + this.state.userid)
 	.then(function (response) {
 	  if (response.data.code ==200){
 		console.log(response.data.user);
-		console.log(self.state.username);
-		var users = [];
-		var appointlist = [];
-		var tusers = response.data.user;
-		var nowdate = new Date();
-		for(var i=0;i<response.data.user.length;i++){
-			var items = tusers[i].dateItems;
-			console.log(items);
-			for(var j=0;j<items.length;j++){
-				
-				var d = new Date(Date.parse(items[j].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
-				console.log(d);
-				console.log(nowdate)
-				if(items[j].clientid == self.state.userid && d < nowdate ){
-					items[j].user = tusers[i];
-					appointlist.push(items[j]);
+		var user = response.data.user;
+		var dateItems = response.data.user.dateItems;
+		axios.get('api/users/getallusers/client')
+		.then(function (response) {
+		  if (response.data.code ==200){
+			console.log(response.data.user);
+			var clients = response.data.user;
+			var appointlist = [];
+			var nowdate = new Date();
+			for(var i=0;i<dateItems.length;i++){
+				var d = new Date(Date.parse(dateItems[i].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
+				for(var j = 0;j< clients.length;j++){
+					if(dateItems[i].clientid == clients[j].id && d < nowdate ){
+						dateItems[i].client = clients[j];
+						dateItems[i].location = user.location;
+						appointlist.push(dateItems[i]);
+						break
+					}
 				}
 			}
-		}
-		console.log(appointlist);
-		self.setState({searchItems:appointlist});
-		self.renderSearchlist(appointlist);
+			console.log(appointlist);
+			self.setState({searchItems:appointlist});
+			self.renderSearchlist(appointlist);
+
+		  }
+		  console.log(response);
+		})
+		.catch(function (error) {
+		  console.log(error);
+		});
+		//self.setState({searchItems:appointlist});
+		//self.renderSearchlist(appointlist);
 
 	  }
 	  console.log(response);
@@ -340,4 +350,4 @@ class HistoryClientScreen extends Component {
     margin: 15,
   };
 
-  export default HistoryClientScreen;
+  export default HistoryUserScreen;
