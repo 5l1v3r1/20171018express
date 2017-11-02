@@ -67,7 +67,7 @@ class HistoryClientScreen extends Component {
 				var d = new Date(Date.parse(items[j].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
 				console.log(d);
 				console.log(nowdate)
-				if(items[j].clientid == self.state.userid && d < nowdate ){
+				if(items[j].clientid == self.state.userid  ){
 					items[j].user = tusers[i];
 					appointlist.push(items[j]);
 				}
@@ -118,7 +118,7 @@ class HistoryClientScreen extends Component {
 				console.log(d);
 				console.log(nowdate);
 				console.log(littledate);
-				if(items[j].clientid == self.state.userid && d < nowdate && d > littledate ){
+				if(items[j].clientid == self.state.userid  && d > littledate ){
 					items[j].user = tusers[i];
 					appointlist.push(items[j]);
 				}

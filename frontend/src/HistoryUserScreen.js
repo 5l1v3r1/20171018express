@@ -66,7 +66,7 @@ class HistoryUserScreen extends Component {
 			for(var i=0;i<dateItems.length;i++){
 				var d = new Date(Date.parse(dateItems[i].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
 				for(var j = 0;j< clients.length;j++){
-					if(dateItems[i].clientid == clients[j].id && d < nowdate ){
+					if(dateItems[i].clientid == clients[j].id ){
 						dateItems[i].client = clients[j];
 						dateItems[i].location = user.location;
 						appointlist.push(dateItems[i]);
@@ -107,36 +107,44 @@ class HistoryUserScreen extends Component {
   }
   handleSearchClick(event) {
     var self = this;
-	axios.get('api/users/getallusers/user')
+	axios.get('/api/users/' + this.state.userid)
 	.then(function (response) {
 	  if (response.data.code ==200){
 		console.log(response.data.user);
-		console.log(self.state.username);
-		var users = [];
-		var appointlist = [];
-		var tusers = response.data.user;
-		var nowdate = new Date();
-		
-		for(var i=0;i<response.data.user.length;i++){
-			var items = tusers[i].dateItems;
-			console.log(items);
-			for(var j=0;j<items.length;j++){
-				
-				var d = new Date(Date.parse(items[j].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
-				var littledate = new Date();
+		var user = response.data.user;
+		var dateItems = response.data.user.dateItems;
+		axios.get('api/users/getallusers/client')
+		.then(function (response) {
+		  if (response.data.code ==200){
+			console.log(response.data.user);
+			var clients = response.data.user;
+			var appointlist = [];
+			var nowdate = new Date();
+			for(var i=0;i<dateItems.length;i++){
+				var d = new Date(Date.parse(dateItems[i].enddate.replace(/-/g,   "/").replace(/T/g,   " ").replace(/Z/g,   "")));
+        var littledate = new Date();
         littledate.setDate( littledate.getDate()- self.state.datestep*30 );
-				console.log(d);
-				console.log(nowdate);
-				console.log(littledate);
-				if(items[j].clientid == self.state.userid && d < nowdate && d > littledate ){
-					items[j].user = tusers[i];
-					appointlist.push(items[j]);
+				for(var j = 0;j< clients.length;j++){
+					if(dateItems[i].clientid == clients[j].id &&  d > littledate ){
+						dateItems[i].client = clients[j];
+						dateItems[i].location = user.location;
+						appointlist.push(dateItems[i]);
+						break
+					}
 				}
 			}
-		}
-		console.log(appointlist);
-		self.setState({searchItems:appointlist});
-		self.renderSearchlist(appointlist);
+			console.log(appointlist);
+			self.setState({searchItems:appointlist});
+			self.renderSearchlist(appointlist);
+
+		  }
+		  console.log(response);
+		})
+		.catch(function (error) {
+		  console.log(error);
+		});
+		//self.setState({searchItems:appointlist});
+		//self.renderSearchlist(appointlist);
 
 	  }
 	  console.log(response);
@@ -144,6 +152,7 @@ class HistoryUserScreen extends Component {
 	.catch(function (error) {
 	  console.log(error);
 	});
+
 
 
   }
@@ -320,7 +329,6 @@ class HistoryUserScreen extends Component {
           <p>Email: {data.email}</p>
           <p>Gender: {data.gender}</p>
           <p>Location: {data.location}</p>
-          <p>Price: {data.price}</p>
            <br/>
            <RaisedButton label="Return to Search page" primary={true} style={style} onClick={(event) => this.handleCancelMsg(event)}/>
          </div>
@@ -337,8 +345,8 @@ class HistoryUserScreen extends Component {
           <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
           <td data-title="Time">{data.startdate} - {data.enddate}</td>
           <td data-title="Rating">0$</td>
-          <td data-title="Location">{data.user.location}</td>
-          <td data-title="username" onClick={(event) =>this.handleGetProfile(data.user)} ><a className="usershow">{data.user.username}</a></td>
+          <td data-title="Location">{data.location}</td>
+          <td data-title="username" onClick={(event) =>this.handleGetProfile(data.client)} ><a className="usershow">{data.client.username}</a></td>
           </tr>
         );
       });
