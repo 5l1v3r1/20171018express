@@ -10,6 +10,7 @@ import LoginScreen from './Loginscreen'
 import ProfileScreen from './ProfileScreen';
 import NoteScreen from './NoteScreen';
 import DateScreen from './DateScreen';
+import HistoryClientScreen from './HistoryClientScreen';
 import SearchScreen from './SearchScreen';
 import axios from 'axios';
 /*User page include nav */
@@ -53,7 +54,14 @@ class App extends Component {
 		  // console.log("need to open pastfiles")
 		  var currentScreen=[];
 		  currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
-      this.setState({currentScreen});
+		  this.setState({currentScreen});
+
+      	break;
+      case "history":
+		  // console.log("need to open pastfiles")
+		  var currentScreen=[];
+		  currentScreen.push(<HistoryClientScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
+		  this.setState({currentScreen});
 
       	break;
       case "logout":
@@ -84,6 +92,9 @@ class App extends Component {
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"profile")}>
                   Profile
+              </MenuItem>
+			        <MenuItem onClick={(event) => this.handleMenuClick(event,"history")}>
+                  History
               </MenuItem>
               <MenuItem onClick={(event) => this.handleMenuClick(event,"logout")}>
                   Logout

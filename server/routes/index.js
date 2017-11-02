@@ -15,7 +15,7 @@ module.exports = (app) => {
   app.post('/api/users/check', usersController.check);//check user pwd
   app.get('/api/users/:userid', usersController.retrieve);//get user info
   app.get('/api/users/search/:category/:price/:location', usersController.search);//get user info
-
+  app.get('/api/users/getallusers/:role', usersController.getallusers);//get all users
   //if I uncommemnt above it retrieve it wont work...
 
   app.post('/api/users/:userid', usersController.update);//update user

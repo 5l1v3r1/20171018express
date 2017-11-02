@@ -87,7 +87,58 @@ module.exports = {
             "success":error
           });});
   },
-
+  getallusers(req, res) {
+    return User.findAll({
+      where: {
+        role: req.params.role,
+      },
+      include: [
+		  {
+          model: NoteItem ,
+          as: 'noteItems',
+          },
+		  {
+		      model: DateItem ,
+              as: 'dateItems',
+          }
+	    ],
+    })
+    /*
+      .findById(req.params.userid, {
+        include: [
+			{
+              model: NoteItem ,
+              as: 'noteItems',
+            },
+			{
+		      model: DateItem ,
+              as: 'dateItems',
+            },
+				 ],
+		order: [
+          [{ model: NoteItem, as: 'noteItems' }, 'createdAt', 'ASC'],
+        ],
+      })
+      */
+      .then((user) => {
+        if (!user) {
+          return res.send({
+            "code":404,
+            "success":"User do not match"
+          });
+        }
+		//console.log("lalaal");
+        return res.send({
+            "code":200,
+            "success":"users find sucessfull",
+            "user":user
+          });
+      })
+      .catch((error) => {return res.send({
+            "code":404,
+            "success":error
+          });});
+  },
   /*find user info*/
   retrieve(req, res) {
     return User
