@@ -221,10 +221,8 @@ class HistoryUserScreen extends Component {
 		  <table className="notetable">
 		  <tr>
 		  <th>Time</th>
-		  <th>Rating</th>
 		  <th>Location</th>
-		  <th>Contractor</th>
-      <th></th>
+		  <th>Client</th>
 		  </tr>
 		  <tbody>
 
@@ -344,7 +342,6 @@ class HistoryUserScreen extends Component {
         return (
           <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
           <td data-title="Time">{data.startdate} - {data.enddate}</td>
-          <td data-title="Rating">0$</td>
           <td data-title="Location">{data.location}</td>
           <td data-title="username" onClick={(event) =>this.handleGetProfile(data.client)} ><a className="usershow">{data.client.username}</a></td>
           </tr>

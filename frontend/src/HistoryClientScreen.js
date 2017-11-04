@@ -205,7 +205,6 @@ class HistoryClientScreen extends Component {
 		  <th>Rating</th>
 		  <th>Location</th>
 		  <th>Contractor</th>
-      <th></th>
 		  </tr>
 		  <tbody>
 
@@ -326,7 +325,7 @@ class HistoryClientScreen extends Component {
         return (
           <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
           <td data-title="Time">{data.startdate} - {data.enddate}</td>
-          <td data-title="Rating">0$</td>
+          <td data-title="Rating">0</td>
           <td data-title="Location">{data.user.location}</td>
           <td data-title="username" onClick={(event) =>this.handleGetProfile(data.user)} ><a className="usershow">{data.user.username}</a></td>
           </tr>
